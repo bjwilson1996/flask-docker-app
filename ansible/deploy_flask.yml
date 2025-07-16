@@ -1,0 +1,25 @@
+---
+- name: Deploy Flask App in Docker Container
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Copy Flask app and Dockerfile to EC2
+      copy:
+        src: "{{ item }}"
+        dest: "/home/ubuntu/"
+      with_items:
+        - Dockerfile
+        - flask_app/
+
+    - name: Build Docker image
+      command: docker build -t flask-app /home/ubuntu/
+
+    - name: Run Flask Docker container
+      docker_container:
+        name: flask-container
+        image: flask-app
+        state: started
+        ports:
+          - "5000:5000"
+        restart_policy: always
